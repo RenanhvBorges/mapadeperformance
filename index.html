@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#263fa3" />
+    <title>Mapa de Performance Digital | Oxford Soluções Digitais</title>
+    <meta
+      name="description"
+      content="Descubra em 2 minutos qual é o gargalo que está travando o crescimento do seu negócio — e receba um diagnóstico com nota por eixo do seu funil."
+    />
+    <meta property="og:title" content="Mapa de Performance Digital | Oxford Soluções Digitais" />
+    <meta
+      property="og:description"
+      content="Descubra em 2 minutos qual é o gargalo que está travando o crescimento do seu negócio."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Prata&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23263fa3'/><text x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23fff' text-anchor='middle'>O</text></svg>"
+    />
+  </head>
+  <body>
+    <!-- Landing estática: aparece no primeiro paint, sem depender do JS. -->
+    <main class="hero" id="landing">
+      <div class="shell">
+        <div class="wordmark">Oxford<span>Soluções Digitais</span></div>
+      </div>
+
+      <div class="shell hero__body">
+        <p class="eyebrow eyebrow--on-blue">Mapa de Performance Digital</p>
+
+        <h1>
+          Descubra o <em>gargalo</em> que está travando o crescimento do seu
+          negócio.
+        </h1>
+
+        <p class="hero__lead">
+          <span id="question-count">11</span> perguntas rápidas — sem métrica
+          complicada, sem planilha. No final você recebe um diagnóstico com nota
+          por eixo do seu funil e o ponto exato onde seu dinheiro está vazando.
+        </p>
+
+        <div class="hero__meta">
+          <div><strong>2 min</strong>para responder</div>
+          <div><strong>4 eixos</strong>avaliados</div>
+          <div><strong>R$ 3 mi+</strong>gerenciados em tráfego</div>
+        </div>
+
+        <div class="hero__cta">
+          <button class="btn" id="start">Começar meu diagnóstico</button>
+          <p class="hero__note">
+            Serve para e-commerce, prestador de serviço, infoproduto e B2B.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Quiz, contato, cálculo e relatório são renderizados aqui. -->
+    <div id="app" hidden></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
