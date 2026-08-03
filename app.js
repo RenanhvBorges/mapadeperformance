@@ -547,40 +547,68 @@ function showCalculating() {
    6b. GRÁFICOS — SVG gerado na mão, sem biblioteca
    ---------------------------------------------------------------- */
 
+/** Nota de referência de uma operação saudável. Usada pelos três gráficos. */
+const BENCHMARK = 75;
+
 /**
- * Medidor em arco para a nota geral. Marca as fronteiras das faixas
- * (40 e 65) para o leitor ver em que zona caiu, não só o número.
+ * Medidor em arco graduado para a nota geral. Traz escala de 10 em 10,
+ * as fronteiras das faixas (40 e 65) e a marca da operação saudável (75),
+ * para o número ser lido contra uma régua e não sozinho.
  */
 function gaugeSvg(score) {
-  const R = 92;
-  const CX = 120;
-  const CY = 116;
+  const R = 86;
+  const CX = 134;
+  const CY = 124;
   const ARC = Math.PI * R;
   const TRACK = `M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`;
 
-  // Traço curto atravessando a trilha, na posição da fronteira da faixa.
-  const tick = (value) => {
+  // Converte um valor 0–100 numa coordenada sobre o arco.
+  const at = (value, radius) => {
     const angle = Math.PI * (1 - value / 100);
-    const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
-    return `<line class="gauge__tick"
-      x1="${CX + (R - 11) * cos}" y1="${CY - (R - 11) * sin}"
-      x2="${CX + (R + 11) * cos}" y2="${CY - (R + 11) * sin}" />`;
+    return [CX + radius * Math.cos(angle), CY - radius * Math.sin(angle)];
   };
 
+  const radial = (value, from, to, className) => {
+    const [x1, y1] = at(value, from);
+    const [x2, y2] = at(value, to);
+    return `<line class="${className}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}"
+      x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" />`;
+  };
+
+  // Escala: traço curto a cada 10, traço longo a cada 50.
+  let ticks = "";
+  for (let value = 0; value <= 100; value += 10) {
+    const major = value % 50 === 0;
+    ticks += radial(value, R + 5, R + (major ? 14 : 10), "gauge__grad");
+  }
+
+  // Marca da referência saudável.
+  const [bx, by] = at(BENCHMARK, R + 21);
+  const benchmark =
+    radial(BENCHMARK, R - 11, R + 15, "gauge__benchmark") +
+    `<text class="gauge__benchmark-label" x="${bx.toFixed(1)}" y="${by.toFixed(1)}"
+      text-anchor="middle">saudável</text>`;
+
+  const [minX, minY] = at(0, R + 23);
+  const [maxX, maxY] = at(100, R + 23);
+
   return `
-    <svg class="gauge" viewBox="0 0 240 136" role="img"
-      aria-label="Nota geral: ${score} de 100">
+    <svg class="gauge" viewBox="0 0 268 152" role="img"
+      aria-label="Nota geral: ${score} de 100. Faixas: até 39 crítico, 40 a 64 atenção, 65 ou mais saudável. Referência de operação saudável: ${BENCHMARK}.">
       <path class="gauge__track" d="${TRACK}" />
-      ${tick(40)}${tick(65)}
+      ${ticks}
       <path class="gauge__fill" d="${TRACK}"
-        stroke-dasharray="${(score / 100) * ARC} ${ARC}" />
-      <text class="gauge__min" x="${CX - R}" y="${CY + 22}">0</text>
-      <text class="gauge__max" x="${CX + R}" y="${CY + 22}">100</text>
+        stroke-dasharray="${((score / 100) * ARC).toFixed(1)} ${ARC.toFixed(1)}" />
+      ${benchmark}
+      <text class="gauge__scale" x="${minX.toFixed(1)}" y="${minY.toFixed(1)}"
+        text-anchor="middle">0</text>
+      <text class="gauge__scale" x="${maxX.toFixed(1)}" y="${maxY.toFixed(1)}"
+        text-anchor="middle">100</text>
     </svg>`;
 }
 
+
 const RADAR_ORDER = ["atracao", "conversao", "retencao", "operacao"];
-const RADAR_BENCHMARK = 75; // nota de referência de uma operação saudável
 
 /**
  * Radar dos 4 eixos. Duas formas sobrepostas: a do negócio e a de uma
@@ -648,13 +676,89 @@ function radarSvg(axes, bottleneckAxis) {
     <svg class="radar" viewBox="0 0 320 258" role="img"
       aria-label="Formato do funil: ${ordered
         .map((a) => `${a.label} ${a.score}`)
-        .join(", ")}. Referência de operação saudável: ${RADAR_BENCHMARK} em todos os eixos.">
+        .join(", ")}. Referência de operação saudável: ${BENCHMARK} em todos os eixos.">
       ${rings}${spokes}
       <polygon class="radar__benchmark"
-        points="${polygon([RADAR_BENCHMARK, RADAR_BENCHMARK, RADAR_BENCHMARK, RADAR_BENCHMARK])}" />
-      <polygon class="radar__shape" points="${polygon(scores)}" />
-      ${vertices}${labels}
+        points="${polygon([BENCHMARK, BENCHMARK, BENCHMARK, BENCHMARK])}" />
+      <g class="radar__plot" style="transform-origin:${CX}px ${CY}px">
+        <polygon class="radar__shape" points="${polygon(scores)}" />
+        ${vertices}
+      </g>
+      ${labels}
     </svg>`;
+}
+
+/**
+ * Quanto cada eixo devolve na nota geral se for levado até o nível de uma
+ * operação saudável: peso do eixo × distância até a referência.
+ *
+ * O eixo com a menor nota nem sempre é o de maior retorno — um eixo de peso
+ * alto um pouco abaixo do saudável pode valer mais do que um eixo de peso
+ * baixo lá no fundo. É isso que define a ordem de ataque.
+ */
+function computeImpact(result) {
+  return result.axes
+    .map((axis) => {
+      const gap = Math.max(0, BENCHMARK - axis.score);
+      return { ...axis, gap, impact: AXIS_WEIGHT[axis.axis] * gap };
+    })
+    .sort((a, b) => b.impact - a.impact);
+}
+
+const pts = (value) => value.toFixed(1).replace(".", ",");
+
+/** Barras de impacto, escaladas pelo maior retorno da lista. */
+function impactChart(ranked) {
+  const top = ranked[0].impact || 1;
+
+  return `
+    <div class="chart chart--impact">
+      ${ranked
+        .map((axis, i) => {
+          // Eixo já no nível saudável não tem o que recuperar: sem posição,
+          // sem barra, sem número inventado.
+          if (axis.impact <= 0) {
+            return `
+        <div class="bar" data-done="true">
+          <span class="bar__name"><span class="bar__rank">✓</span>${axis.label}</span>
+          <span class="bar__track"></span>
+          <span class="bar__value"><small>no nível</small></span>
+        </div>`;
+          }
+          return `
+        <div class="bar">
+          <span class="bar__name">
+            <span class="bar__rank">${i + 1}</span>${axis.label}
+          </span>
+          <span class="bar__track" role="img"
+            aria-label="${axis.label}: recupera ${pts(axis.impact)} pontos da nota geral">
+            <span class="bar__fill" data-accent="${i === 0}"
+              style="width:${((axis.impact / top) * 100).toFixed(1)}%"></span>
+          </span>
+          <span class="bar__value">+${pts(axis.impact)} <small>pts</small></span>
+        </div>`;
+        })
+        .join("")}
+    </div>`;
+}
+
+/** Barra empilhada: nota de hoje + o que o primeiro item da lista devolve. */
+function projectionChart(overall, gain) {
+  const projected = Math.round(overall + gain);
+
+  return `
+    <div class="projection">
+      <div class="projection__bar" role="img"
+        aria-label="Nota hoje ${overall}, projetada ${projected} de 100">
+        <span class="projection__now" style="width:${overall}%"></span>
+        <span class="projection__gain" style="width:${gain}%"></span>
+      </div>
+      <div class="projection__legend">
+        <span><b>${overall}</b> hoje</span>
+        <span class="projection__arrow" aria-hidden="true">→</span>
+        <span class="projection__target"><b>${projected}</b> corrigindo o primeiro item</span>
+      </div>
+    </div>`;
 }
 
 function whatsappLink(contact, result) {
@@ -672,6 +776,7 @@ function showReport() {
   const overall = OVERALL_VERDICT[result.overallBand];
   const diagnosis = BOTTLENECK_DIAGNOSIS[result.bottleneck.axis];
   const showStrength = result.strength.axis !== result.bottleneck.axis;
+  const ranked = computeImpact(result);
   const today = new Date().toLocaleDateString("pt-BR", {
     day: "numeric",
     month: "long",
@@ -728,7 +833,7 @@ function showReport() {
               <div class="chart__legend">
                 <span><i data-accent="true"></i> Gargalo</span>
                 <span><i></i> Demais eixos</span>
-                <span><i data-ref="true"></i> Operação saudável (${RADAR_BENCHMARK})</span>
+                <span><i data-ref="true"></i> Operação saudável (${BENCHMARK})</span>
               </div>
             </div>
           </section>
@@ -749,17 +854,27 @@ function showReport() {
           </div>
         </section>
 
-        ${
-          showStrength
-            ? `<section class="section">
-                 <div class="card strength">
-                   <p class="eyebrow">O que já está funcionando</p>
-                   <h3>${result.strength.label} — ${result.strength.score}/100</h3>
-                   <p>${AXIS_VERDICT[result.strength.axis][result.strength.band]}</p>
-                 </div>
-               </section>`
-            : ""
-        }
+        <section class="section">
+          <p class="eyebrow">Plano</p>
+          <h2 class="section__title">Por onde começar</h2>
+          <div class="card">
+            <p class="plan__intro">
+              Quanto cada eixo devolve na sua nota geral se for levado até o
+              nível de uma operação saudável. A ordem já é a ordem de ataque.
+            </p>
+            ${impactChart(ranked)}
+            ${projectionChart(result.overall, ranked[0].impact)}
+            ${
+              showStrength
+                ? `<p class="plan__strength">
+                     <b>${result.strength.label} (${result.strength.score}) é seu ponto mais
+                     forte hoje.</b>
+                     ${AXIS_VERDICT[result.strength.axis][result.strength.band]}
+                   </p>`
+                : ""
+            }
+          </div>
+        </section>
 
         <section class="section">
           <div class="cta">

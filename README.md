@@ -106,18 +106,36 @@ sozinha. Sem `axis`, a pergunta só qualifica e não mexe no mapa.
 
 ## Os gráficos do relatório
 
-São três, e cada um responde uma pergunta diferente — não repetem o mesmo dado:
+São cinco, e cada um responde uma pergunta diferente — nenhum repete o dado
+do outro:
 
 | Gráfico | Responde | Onde fica |
 |---|---|---|
 | **Medidor em arco** | "Quão bem eu estou, no geral?" | `gaugeSvg()` |
-| **Radar** | "Meu funil é equilibrado? Onde estou longe do saudável?" | `radarSvg()` |
-| **Barras** | "Qual a nota exata de cada eixo?" | direto em `showReport()` |
+| **Radar** | "Meu funil é equilibrado? Quão longe estou do saudável?" | `radarSvg()` |
+| **Barras por eixo** | "Qual a nota exata de cada eixo?" | `showReport()` |
+| **Ranking de impacto** | "Por onde eu começo?" | `impactChart()` |
+| **Projeção da nota** | "Quanto eu ganho se corrigir isso?" | `projectionChart()` |
 
-Tudo é SVG gerado na mão, sem biblioteca de gráficos. O radar sobrepõe duas
-formas: a do negócio e a de uma operação saudável (`RADAR_BENCHMARK`, 75 em
-todos os eixos, tracejada). O buraco entre as duas é o argumento visual da
-isca.
+Tudo é SVG e HTML gerados na mão, sem biblioteca de gráficos.
+
+O **medidor** é graduado de 10 em 10, com a marca da operação saudável, para o
+número ser lido contra uma régua e não sozinho. O **radar** sobrepõe duas
+formas — a do negócio e a de uma operação saudável (`BENCHMARK`, 75 em todos os
+eixos, tracejada); o buraco entre elas é o argumento visual da isca.
+
+O **ranking de impacto** é a única análise que não sai direto das respostas:
+
+```
+impacto do eixo = peso do eixo × (BENCHMARK − nota do eixo)
+```
+
+Ou seja, quantos pontos da nota geral aquele eixo devolve se for levado até o
+nível saudável. Isso importa porque **o eixo mais fraco nem sempre é o de maior
+retorno** — um eixo de peso alto um pouco abaixo do saudável pode valer mais do
+que um eixo de peso baixo lá no fundo. A soma de todos os impactos sempre fecha
+em `BENCHMARK − nota geral`, e eixos já no nível aparecem sem barra e sem número
+inventado. A **projeção** aplica só o primeiro item da lista.
 
 ## Notas de implementação
 

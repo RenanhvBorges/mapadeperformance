@@ -576,18 +576,33 @@ button {
   animation: sweep 900ms var(--ease-out) both;
 }
 
-.gauge__tick {
-  stroke: #fff;
-  stroke-width: 2;
+/* Escala graduada em volta do arco */
+.gauge__grad {
+  stroke: var(--ink-300);
+  stroke-width: 1.5;
+  stroke-linecap: round;
 }
 
-.gauge__min,
-.gauge__max {
+.gauge__benchmark {
+  stroke: var(--oxford-blue);
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+}
+
+.gauge__benchmark-label {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--oxford-blue);
+}
+
+.gauge__scale {
+  font-family: var(--font-sans);
+  font-size: 10px;
   font-weight: 500;
   fill: var(--fg-3);
-  text-anchor: middle;
 }
 
 @keyframes sweep {
@@ -666,12 +681,23 @@ button {
   stroke-dasharray: 4 4;
 }
 
+/* A forma cresce do centro do radar, não da caixa do polígono */
+.radar__plot {
+  animation: bloom 620ms var(--ease-out) both;
+}
+
+@keyframes bloom {
+  from {
+    transform: scale(0.05);
+    opacity: 0;
+  }
+}
+
 .radar__shape {
   fill: rgba(79, 102, 184, 0.16);
   stroke: var(--data-bar);
   stroke-width: 2;
   stroke-linejoin: round;
-  animation: fade 500ms var(--ease-out) both;
 }
 
 .radar__dot {
@@ -793,6 +819,145 @@ button {
   background: transparent;
   border: 1.5px dashed var(--ink-300);
   border-radius: 2px;
+}
+
+/* ---- Plano: impacto por eixo e projeção da nota ---- */
+
+.plan__intro {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--fg-3);
+  margin-bottom: 4px;
+  text-wrap: pretty;
+}
+
+.chart--impact {
+  border-top: 0;
+  padding-top: 4px;
+  margin-top: 12px;
+}
+
+/* Coluna do nome precisa acomodar a numeração além do texto */
+.chart--impact .bar {
+  grid-template-columns: 106px 1fr auto;
+}
+
+.chart--impact .bar__name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.bar__rank {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--ink-100);
+  color: var(--fg-3);
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.chart--impact .bar:first-child .bar__rank {
+  background: var(--oxford-terracotta);
+  color: #fff;
+}
+
+.chart--impact .bar__value {
+  min-width: 62px;
+}
+
+.projection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-1);
+}
+
+.projection__bar {
+  display: flex;
+  gap: 2px; /* respiro entre os dois segmentos */
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--data-track);
+  overflow: hidden;
+}
+
+.projection__now,
+.projection__gain {
+  display: block;
+  height: 100%;
+  animation: grow 800ms var(--ease-out) both;
+}
+
+.projection__now {
+  background: var(--data-bar);
+  border-radius: var(--radius-full) 0 0 var(--radius-full);
+}
+
+.projection__gain {
+  background: var(--oxford-terracotta);
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  animation-delay: 200ms;
+}
+
+.projection__legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.8125rem;
+  color: var(--fg-3);
+}
+
+.projection__legend b {
+  font-size: 1rem;
+  color: var(--fg-1);
+}
+
+.projection__arrow {
+  color: var(--ink-300);
+}
+
+.projection__target b {
+  color: var(--oxford-terracotta-700);
+}
+
+/* Eixo que já está no nível: sem barra, sem número */
+.chart--impact .bar[data-done="true"] .bar__track {
+  background: transparent;
+  border-bottom: 1px dashed var(--ink-200);
+  height: 0;
+  align-self: center;
+}
+
+.chart--impact .bar[data-done="true"] .bar__name,
+.chart--impact .bar[data-done="true"] .bar__value {
+  color: var(--fg-3);
+}
+
+.chart--impact .bar[data-done="true"] .bar__rank {
+  background: transparent;
+  color: var(--oxford-blue-400);
+  font-size: 0.75rem;
+}
+
+.plan__strength {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--fg-2);
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-1);
+  text-wrap: pretty;
+}
+
+.plan__strength b {
+  color: var(--fg-1);
 }
 
 /* Gargalo principal */
