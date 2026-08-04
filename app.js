@@ -914,6 +914,9 @@ function showReport() {
    ---------------------------------------------------------------- */
 
 function sendLead() {
+  // Sem endpoint configurado não há o que enviar.
+  if (!CONFIG.leadEndpoint) return;
+
   const { contact, answers, result } = state;
 
   const payload = {
