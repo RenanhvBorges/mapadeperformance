@@ -143,8 +143,9 @@ inventado. A **projeção** aplica só o primeiro item da lista.
   validadas para daltonismo: ΔE 20.6 em protanopia, 27.5 em visão normal.
   O gargalo também é marcado por rótulo, legenda e posição — nunca só por cor.
 - Cada gráfico tem `aria-label` com os valores em texto, para leitor de tela.
-- O relatório imprime em PDF pelo botão no rodapé (`@media print` já remove o
-  CTA e ajusta as cores).
+- A isca não oferece impressão nem envio do mapa por e-mail — o relatório vive
+  na tela e o próximo passo é o WhatsApp. O `@media print` continua ali só para
+  quem usar o atalho do navegador não receber uma página quebrada.
 - `prefers-reduced-motion` desliga as animações de entrada, de barra e do arco.
 - Nome, empresa e e-mail são escapados antes de entrar no HTML.
 - Acima de 720px a nota e o mapa dividem a mesma linha; abaixo disso empilham.

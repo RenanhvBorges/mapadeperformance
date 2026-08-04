@@ -1087,17 +1087,6 @@ button {
   background: var(--oxford-terracotta);
 }
 
-.cta__note {
-  font-size: 0.6875rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 12px;
-}
-
-.report__foot {
-  text-align: center;
-  margin-top: 20px;
-}
-
 .report {
   padding-bottom: 40px;
 }
@@ -1153,7 +1142,9 @@ button {
   }
 }
 
-/* ---------- Impressão / salvar em PDF ------------------------- */
+/* ---------- Impressão -----------------------------------------
+   A isca não oferece impressão em lugar nenhum, mas quem usar o
+   atalho do próprio navegador não recebe uma página quebrada. */
 
 @media print {
   body {
@@ -1164,8 +1155,7 @@ button {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .cta,
-  .report__foot {
+  .cta {
     display: none;
   }
   .card {

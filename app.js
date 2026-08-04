@@ -444,7 +444,7 @@ function showContact() {
       ${progressBar(QUESTIONS.length, "Último passo")}
       <div class="shell quiz__body">
         <div class="fade">
-          <h2 class="quiz__question">Seu mapa está pronto. Para onde enviamos?</h2>
+          <h2 class="quiz__question">Seu mapa está pronto. Falta só saber quem é você.</h2>
           <form class="form" id="contact-form" novalidate>
             ${FIELDS.map(
               (f) => `
@@ -894,19 +894,10 @@ function showReport() {
               target="_blank" rel="noopener noreferrer">
               Agendar minha sessão estratégica
             </a>
-            <p class="cta__note">
-              ${esc(contact.nome)}, seu mapa também foi enviado para ${esc(contact.email)}.
-            </p>
           </div>
         </section>
-
-        <div class="report__foot">
-          <button class="btn btn--ghost" id="print">Salvar meu mapa em PDF</button>
-        </div>
       </div>
     </main>`);
-
-  app.querySelector("#print").addEventListener("click", () => window.print());
 }
 
 /* ----------------------------------------------------------------
