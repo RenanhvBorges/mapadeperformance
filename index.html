@@ -17,6 +17,25 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
 
+    <!-- Google Tag Manager.
+         Cole o ID do contêiner (GTM-XXXXXXX) em GTM_ID para ligar.
+         Vazio mantém a tag desligada sem quebrar nada: o dataLayer existe
+         do mesmo jeito e os eventos apenas ficam na fila, sem consumidor. -->
+    <script>
+      window.GTM_ID = "";
+
+      window.dataLayer = window.dataLayer || [];
+      (function (w, d, s, id) {
+        if (!id) return;
+        w.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+        var first = d.getElementsByTagName(s)[0];
+        var tag = d.createElement(s);
+        tag.async = true;
+        tag.src = "https://www.googletagmanager.com/gtm.js?id=" + id;
+        first.parentNode.insertBefore(tag, first);
+      })(window, document, "script", window.GTM_ID);
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

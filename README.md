@@ -67,6 +67,40 @@ O payload enviado:
 }
 ```
 
+**3. Google Tag Manager** (opcional) — em `index.html`, no topo do `<head>`:
+
+```js
+window.GTM_ID = ""; // "GTM-XXXXXXX"
+```
+
+Vazio, a tag não carrega e nenhuma requisição sai. O `dataLayer` existe do
+mesmo jeito, então os eventos abaixo são disparados sempre — e o GTM lê o
+histórico inteiro quando carregar.
+
+## Eventos no dataLayer
+
+Três eventos cobrem o funil da isca. No GTM cada um vira um acionador do tipo
+**Evento personalizado** com o nome exato; os campos viram **variáveis da
+camada de dados** com o mesmo nome.
+
+| Evento | Quando dispara | Campos |
+|---|---|---|
+| `isca_inicio` | clique em "Começar meu diagnóstico" | `total_perguntas` |
+| `isca_conclusao` | formulário validado, antes do relatório aparecer | `nota_geral`, `classificacao`, `gargalo`, `temperatura`, `lead_score`, `tipo_negocio`, `faturamento`, `investimento_atual`, `disposicao_investir` |
+| `isca_whatsapp` | clique em "Agendar minha sessão estratégica" | `gargalo`, `nota_geral`, `temperatura` |
+
+`isca_conclusao` é a conversão a otimizar nas campanhas — é onde o lead entra
+na base. `isca_whatsapp` é intenção comercial e costuma ser bem mais raro;
+serve para medir a qualidade do tráfego, não para otimizar (volume baixo demais
+para o algoritmo aprender).
+
+Dividir `isca_conclusao` por `isca_inicio` dá a taxa de conclusão do quiz, que
+é o número para julgar se o criativo está trazendo a pessoa certa.
+
+**Nenhum evento leva nome, e-mail ou telefone** — só dado de qualificação. O
+GA4 proíbe dado pessoal na camada de dados e suspende conta por isso. Quem
+recebe o contato é o webhook do lead, pelo servidor.
+
 ## Como o diagnóstico funciona
 
 **Quatro eixos** compõem o mapa: Atração, Conversão, Retenção e Operação.

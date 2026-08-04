@@ -325,6 +325,25 @@ function esc(value) {
   );
 }
 
+/**
+ * Empurra um evento para o dataLayer do Google Tag Manager.
+ *
+ * Funciona com a tag desligada: o dataLayer é só um array, então o push
+ * acontece de qualquer jeito e o GTM consome o histórico inteiro quando
+ * (e se) carregar. Nunca mande nome, e-mail ou telefone por aqui — o GA4
+ * proíbe dado pessoal e a conta pode ser suspensa por isso.
+ */
+function track(event, data) {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...data });
+}
+
+/** Texto da alternativa escolhida numa pergunta, pelo id dela. */
+function answerLabel(questionId) {
+  const question = QUESTIONS.find((q) => q.id === questionId);
+  return question?.options[state.answers[questionId]]?.label ?? "—";
+}
+
 function render(html) {
   landing.hidden = true;
   app.hidden = false;
@@ -505,6 +524,21 @@ function showContact() {
 
     state.contact = contact;
     state.result = computeResult(state.answers);
+
+    // Conversão da isca. Só dado de qualificação — nada que identifique
+    // a pessoa, que é o que o GA4 não aceita.
+    track("isca_conclusao", {
+      nota_geral: state.result.overall,
+      classificacao: state.result.overallBand,
+      gargalo: state.result.bottleneck.label,
+      temperatura: state.result.leadTemp,
+      lead_score: state.result.leadScore,
+      tipo_negocio: answerLabel("tipo-negocio"),
+      faturamento: answerLabel("faturamento"),
+      investimento_atual: answerLabel("investimento-atual"),
+      disposicao_investir: answerLabel("disposicao-investir"),
+    });
+
     sendLead();
     showCalculating();
   });
@@ -890,7 +924,7 @@ function showReport() {
               <li>Projeção de quanto você deixa na mesa hoje</li>
               <li>Sem custo e sem compromisso de contratar</li>
             </ul>
-            <a class="btn" href="${whatsappLink(contact, result)}"
+            <a class="btn" id="whatsapp" href="${whatsappLink(contact, result)}"
               target="_blank" rel="noopener noreferrer">
               Agendar minha sessão estratégica
             </a>
@@ -898,6 +932,16 @@ function showReport() {
         </section>
       </div>
     </main>`);
+
+  // O link abre em outra aba, então não há corrida com o unload: o push
+  // acontece e a página continua viva para o GTM despachar a tag.
+  app.querySelector("#whatsapp").addEventListener("click", () => {
+    track("isca_whatsapp", {
+      gargalo: result.bottleneck.label,
+      nota_geral: result.overall,
+      temperatura: result.leadTemp,
+    });
+  });
 }
 
 /* ----------------------------------------------------------------
@@ -940,4 +984,7 @@ function sendLead() {
    ---------------------------------------------------------------- */
 
 document.getElementById("question-count").textContent = QUESTIONS.length;
-document.getElementById("start").addEventListener("click", showQuestion);
+document.getElementById("start").addEventListener("click", () => {
+  track("isca_inicio", { total_perguntas: QUESTIONS.length });
+  showQuestion();
+});
