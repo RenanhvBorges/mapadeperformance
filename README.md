@@ -63,7 +63,8 @@ O payload enviado:
   "gargalo": "Conversão", "notaGargalo": 20, "pontoForte": "Retenção",
   "notasPorEixo": { "Atração": 45, "Conversão": 20, "Retenção": 48, "Operação": 40 },
   "temperatura": "quente", "leadScore": 6,
-  "respostas": { "origem-clientes": "Indicação e redes sociais no orgânico", "...": "..." }
+  "respostas": { "origem-clientes": "Indicação e redes sociais no orgânico", "...": "..." },
+  "utms": { "utm_source": "meta", "utm_medium": "cpc", "utm_campaign": "lancamento-agosto" }
 }
 ```
 
@@ -100,6 +101,32 @@ Dividir `isca_conclusao` por `isca_inicio` dá a taxa de conclusão do quiz, que
 **Nenhum evento leva nome, e-mail ou telefone** — só dado de qualificação. O
 GA4 proíbe dado pessoal na camada de dados e suspende conta por isso. Quem
 recebe o contato é o webhook do lead, pelo servidor.
+
+## UTMs do clique
+
+A isca lê `utm_source`, `utm_medium`, `utm_campaign`, `utm_term` e
+`utm_content` da URL de entrada assim que a página carrega — o link do
+anúncio precisa trazer esses parâmetros (o próprio gerenciador do Meta e do
+Google Ads já monta isso automaticamente se a UTM estiver configurada na
+campanha).
+
+Eles vão para dois lugares:
+
+- **`dataLayer`**, como dado solto (sem `event`), logo na primeira linha —
+  fica disponível como variável da camada de dados para qualquer tag, em
+  qualquer acionador, sem precisar repetir em cada evento.
+- **`utms`** no payload do lead (`/api/lead`), junto com o resto dos dados de
+  qualificação — assim o CRM sabe qual campanha, conjunto e criativo trouxe
+  cada lead, não só que ele veio de tráfego pago.
+
+Ficam guardados em `sessionStorage` (`oxford_utms`) para sobreviver a um
+recarregamento de página dentro da mesma aba. Sem UTM na URL, a isca usa o
+que já estiver guardado da entrada; nada é escrito se nunca houve UTM.
+
+Não captura `gclid` nem `fbclid` (os IDs de clique do Google e do Meta, para
+correspondência de conversão nas próprias plataformas) — são parâmetros
+diferentes de UTM. Se precisar deles depois, é o mesmo mecanismo do
+`captureUTMs()` em `app.js`, só acrescentando as chaves.
 
 ## Como o diagnóstico funciona
 

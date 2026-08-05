@@ -344,6 +344,50 @@ function answerLabel(questionId) {
   return question?.options[state.answers[questionId]]?.label ?? "—";
 }
 
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+
+/**
+ * UTMs do clique que trouxe o visitante, lidos da URL.
+ *
+ * Ficam guardados na sessão porque o clique só acontece uma vez, na
+ * entrada — se a pessoa navegar dentro da própria isca (não há para onde
+ * ir, mas por segurança) ou voltar à aba mais tarde, a URL já não tem
+ * mais os parâmetros. Sem UTM nenhum na URL, mantém o que já estava
+ * guardado; com UTM na URL, o mais novo substitui o da sessão.
+ */
+function captureUTMs() {
+  const params = new URLSearchParams(location.search);
+  const fromUrl = Object.fromEntries(
+    UTM_KEYS.map((key) => [key, params.get(key)]).filter(([, value]) => value)
+  );
+
+  let stored = {};
+  try {
+    stored = JSON.parse(sessionStorage.getItem("oxford_utms") || "{}");
+  } catch {
+    stored = {};
+  }
+
+  const utms = Object.keys(fromUrl).length ? fromUrl : stored;
+
+  try {
+    sessionStorage.setItem("oxford_utms", JSON.stringify(utms));
+  } catch {
+    // Modo privado ou storage cheio — segue sem persistir entre telas.
+  }
+
+  return utms;
+}
+
+const UTMS = captureUTMs();
+
+// Sem "event": não é uma ação do visitante, é dado disponível para
+// qualquer tag ler como variável da camada de dados, a qualquer momento.
+if (Object.keys(UTMS).length) {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push(UTMS);
+}
+
 function render(html) {
   landing.hidden = true;
   app.hidden = false;
@@ -968,6 +1012,7 @@ function sendLead() {
     respostas: Object.fromEntries(
       QUESTIONS.map((q) => [q.id, q.options[answers[q.id]]?.label ?? "—"])
     ),
+    utms: UTMS,
   };
 
   // Não bloqueia o relatório: se o envio falhar, o usuário nem percebe.
