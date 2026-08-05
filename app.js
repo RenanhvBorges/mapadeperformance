@@ -10,7 +10,7 @@
 const CONFIG = {
   // WhatsApp que recebe o lead no CTA final.
   // Formato internacional, só dígitos: 55 + DDD + número.
-  whatsapp: "5511999999999",
+  whatsapp: "5521964791690",
 
   // Endpoint que registra o lead. Deixe como está para usar a função
   // serverless em /api/lead.js. Se falhar, o relatório aparece do mesmo jeito.

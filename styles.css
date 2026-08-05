@@ -209,7 +209,10 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 56px 0 40px;
+  /* Só vertical: "padding" em shorthand zeraria o padding lateral
+     herdado de .shell e colaria o texto na borda da tela. */
+  padding-top: 56px;
+  padding-bottom: 40px;
 }
 
 .hero h1 {
@@ -272,6 +275,39 @@ button {
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Em telas de celular a soma de todo o espaçamento acima empurra o botão
+   para fora da primeira dobra. Aqui é só compressão vertical — nenhum
+   texto muda, nenhum bloco some. */
+@media (max-width: 719px) {
+  .hero {
+    padding: 20px 0 24px;
+  }
+
+  .hero__body {
+    padding-top: 20px;
+    padding-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.875rem, 8vw, 3.75rem);
+    margin-top: 14px;
+  }
+
+  .hero__lead {
+    font-size: 1rem;
+    margin-top: 14px;
+  }
+
+  .hero__meta {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+
+  .hero__cta {
+    margin-top: 20px;
+  }
+}
+
 /* ---------- Quiz ---------------------------------------------- */
 
 .quiz {
@@ -315,7 +351,9 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 32px 0;
+  /* Só vertical, pelo mesmo motivo do .hero__body acima. */
+  padding-top: 32px;
+  padding-bottom: 32px;
 }
 
 .quiz__question {
