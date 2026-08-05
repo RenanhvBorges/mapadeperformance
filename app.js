@@ -1088,7 +1088,6 @@ function sendLead() {
    ---------------------------------------------------------------- */
 
 if (!loadFromResultLink()) {
-  document.getElementById("question-count").textContent = QUESTIONS.length;
   document.getElementById("start").addEventListener("click", () => {
     track("isca_inicio", { total_perguntas: QUESTIONS.length });
     showQuestion();

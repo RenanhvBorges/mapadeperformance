@@ -239,29 +239,6 @@ button {
   text-wrap: pretty;
 }
 
-.hero__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 28px;
-  margin-top: 36px;
-  padding-top: 28px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.hero__meta div {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.hero__meta strong {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: #fff;
-  line-height: 1.2;
-}
-
 .hero__cta {
   margin-top: 40px;
   display: flex;
@@ -296,11 +273,6 @@ button {
   .hero__lead {
     font-size: 1rem;
     margin-top: 14px;
-  }
-
-  .hero__meta {
-    margin-top: 20px;
-    padding-top: 16px;
   }
 
   .hero__cta {
