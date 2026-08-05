@@ -1014,14 +1014,13 @@ function showReport() {
             <p class="eyebrow eyebrow--on-blue">Próximo passo</p>
             <h2>Vamos resolver seu gargalo de ${result.bottleneck.label.toLowerCase()}?</h2>
             <p>
-              O mapa mostra onde está o problema. A sessão estratégica mostra como
-              resolver — com a equipe que já gerenciou mais de R$ 3 milhões em tráfego.
+              Em 20 minutos, mostramos como — com quem já gerenciou mais de
+              R$ 3 milhões em tráfego.
             </p>
             <ul class="cta__list">
-              <li>45 minutos, direto ao ponto, sem enrolação</li>
-              <li>Plano de ação específico para o seu gargalo</li>
-              <li>Projeção de quanto você deixa na mesa hoje</li>
-              <li>Sem custo e sem compromisso de contratar</li>
+              <li>20 minutos, direto ao ponto</li>
+              <li>Plano prático para o seu gargalo específico</li>
+              <li>Sem custo e sem compromisso</li>
             </ul>
             <a class="btn" id="whatsapp" href="${whatsappLink(contact, result)}"
               target="_blank" rel="noopener noreferrer">
