@@ -388,6 +388,61 @@ if (Object.keys(UTMS).length) {
   window.dataLayer.push(UTMS);
 }
 
+/** JSON -> base64url, seguro para acentos (nome/empresa levam UTF-8). */
+function toBase64Url(value) {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  let binary = "";
+  bytes.forEach((byte) => (binary += String.fromCharCode(byte)));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(encoded) {
+  const binary = atob(encoded.replace(/-/g, "+").replace(/_/g, "/"));
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/**
+ * Link permanente do relatório de um lead específico, para usar na call.
+ *
+ * Não existe backend nem banco por trás disso: nome, empresa e as respostas
+ * (id da pergunta -> índice da alternativa, o mesmo formato de state.answers)
+ * viajam codificados na própria URL. Quem abre o link recalcula o relatório
+ * na hora — sempre o mesmo resultado, para sempre, sem custo de servidor.
+ *
+ * Isso quebra se QUESTIONS mudar depois (pergunta removida, alternativas
+ * reordenadas) — um link antigo pode calcular errado ou faltar resposta.
+ * Aceitável: o link é para uso comercial de curto prazo, não um arquivo
+ * histórico permanente.
+ */
+function buildResultLink(contact, answers) {
+  const encoded = toBase64Url({ n: contact.nome, e: contact.empresa, a: answers });
+  return `${location.origin}${location.pathname}?r=${encoded}`;
+}
+
+/**
+ * Se a URL tiver "?r=", pula quiz e formulário e vai direto para o
+ * relatório daquele lead. Não conta como nova conversão: sem track(),
+ * sem sendLead() — é só reabrir um resultado que já existe.
+ */
+function loadFromResultLink() {
+  const encoded = new URLSearchParams(location.search).get("r");
+  if (!encoded) return false;
+
+  try {
+    const { n, e, a } = fromBase64Url(encoded);
+    if (!n || !e || !a || !Object.keys(a).length) return false;
+
+    state.contact = { nome: n, empresa: e, whatsapp: "", email: "" };
+    state.answers = a;
+    state.result = computeResult(a);
+    showReport();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function render(html) {
   landing.hidden = true;
   app.hidden = false;
@@ -1012,6 +1067,10 @@ function sendLead() {
     respostas: Object.fromEntries(
       QUESTIONS.map((q) => [q.id, q.options[answers[q.id]]?.label ?? "—"])
     ),
+    respostasTexto: QUESTIONS.map(
+      (q) => `${q.text}\n→ ${q.options[answers[q.id]]?.label ?? "—"}`
+    ).join("\n\n"),
+    linkResultado: buildResultLink(contact, answers),
     utms: UTMS,
   };
 
@@ -1028,8 +1087,10 @@ function sendLead() {
    8. INÍCIO
    ---------------------------------------------------------------- */
 
-document.getElementById("question-count").textContent = QUESTIONS.length;
-document.getElementById("start").addEventListener("click", () => {
-  track("isca_inicio", { total_perguntas: QUESTIONS.length });
-  showQuestion();
-});
+if (!loadFromResultLink()) {
+  document.getElementById("question-count").textContent = QUESTIONS.length;
+  document.getElementById("start").addEventListener("click", () => {
+    track("isca_inicio", { total_perguntas: QUESTIONS.length });
+    showQuestion();
+  });
+}

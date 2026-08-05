@@ -50,11 +50,18 @@ const CONFIG = {
 };
 ```
 
-**2. Destino do lead** (opcional) — defina `LEAD_WEBHOOK_URL` nas variáveis de
-ambiente do projeto na Vercel, apontando para n8n, Make, Zapier, CRM ou Google
-Sheets. Sem isso, o lead ainda aparece nos logs da Vercel.
+**2. CRM da Oxford** (opcional, mas é o caminho principal) — defina
+`CRM_API_URL` e `CRM_API_KEY` nas variáveis de ambiente do projeto na Vercel.
+Com as duas preenchidas, todo lead é cadastrado no CRM e adicionado à lista
+"Leads - Mapa da performance digital". Ver a seção **Integração com o CRM**
+mais abaixo.
 
-O payload enviado:
+**3. Destino adicional do lead** (opcional) — defina `LEAD_WEBHOOK_URL` nas
+variáveis de ambiente, apontando para n8n, Make, Zapier ou uma planilha. Roda
+em paralelo ao CRM, não no lugar dele. Sem nenhuma das duas, o lead ainda
+aparece nos logs da Vercel.
+
+O payload enviado (para o CRM e para o webhook):
 
 ```json
 {
@@ -64,11 +71,13 @@ O payload enviado:
   "notasPorEixo": { "Atração": 45, "Conversão": 20, "Retenção": 48, "Operação": 40 },
   "temperatura": "quente", "leadScore": 6,
   "respostas": { "origem-clientes": "Indicação e redes sociais no orgânico", "...": "..." },
+  "respostasTexto": "Hoje, a maioria dos seus clientes vem de onde?\n→ Indicação...",
+  "linkResultado": "https://.../?r=eyJuIjoi...",
   "utms": { "utm_source": "meta", "utm_medium": "cpc", "utm_campaign": "lancamento-agosto" }
 }
 ```
 
-**3. Google Tag Manager** (opcional) — em `index.html`, no topo do `<head>`:
+**4. Google Tag Manager** (opcional) — em `index.html`, no topo do `<head>`:
 
 ```js
 window.GTM_ID = ""; // "GTM-XXXXXXX"
@@ -127,6 +136,69 @@ Não captura `gclid` nem `fbclid` (os IDs de clique do Google e do Meta, para
 correspondência de conversão nas próprias plataformas) — são parâmetros
 diferentes de UTM. Se precisar deles depois, é o mesmo mecanismo do
 `captureUTMs()` em `app.js`, só acrescentando as chaves.
+
+## Integração com o CRM
+
+Com `CRM_API_URL` e `CRM_API_KEY` configuradas (ver **O que configurar**
+acima), `api/lead.js` cadastra o lead no [CRM da
+Oxford](https://github.com/RenanhvBorges/crm) a cada envio:
+
+1. `POST /api/v1/contacts?upsert=email` — cria o contato ou, se já existir
+   um com o mesmo e-mail (a pessoa refez o teste), atualiza os dados sem
+   duplicar. Tag `Lead` é somada às que o contato já tiver, nunca substitui.
+2. `POST /api/v1/lists/{id}/members` — adiciona o contato à lista **Leads -
+   Mapa da performance digital**, já criada no CRM. Para apontar para outra
+   lista, defina `CRM_LIST_ID` (o UUID padrão está fixo em `api/lead.js`).
+
+Os campos personalizados do contato que recebem o resultado (grupo **Mapa de
+Performance Digital**, já cadastrado no CRM) e os UTMs (grupo **Marketing**,
+reaproveitando `source`/`medium`/`campaign`/`term`/`content` que já
+existiam):
+
+| Campo no CRM | Vem de |
+|---|---|
+| `source`, `medium`, `campaign`, `term`, `content` | `utms` |
+| `mapa_nota_geral` | `notaGeral` |
+| `mapa_classificacao` | `classificacao` (`critico`/`atencao`/`bom`) |
+| `mapa_gargalo` | `gargalo` |
+| `mapa_nota_gargalo` | `notaGargalo` |
+| `mapa_ponto_forte` | `pontoForte` |
+| `mapa_temperatura` | `temperatura` (`frio`/`morno`/`quente`) |
+| `mapa_lead_score` | `leadScore` |
+| `mapa_respostas` | `respostasTexto` — as 11 perguntas e respostas, formatadas |
+| `mapa_link_resultado` | `linkResultado` — ver **Link do resultado** abaixo |
+
+Se `CRM_API_URL`/`CRM_API_KEY` não estiverem configuradas, essa etapa é
+pulada sem erro. Se o CRM estiver fora do ar ou responder com erro, a falha é
+só logada — o relatório do visitante e o webhook (se configurado) seguem
+normalmente.
+
+Criar um campo personalizado novo no CRM não é automático: precisa existir
+antes em `custom_field_definitions` (entidade `contact`), senão o valor
+chega mas fica invisível no formulário do contato. Use a própria tela
+`/contacts/fields` do CRM ou a rota `POST /api/v1/custom-fields`.
+
+## Link do resultado
+
+Cada relatório tem uma URL própria (`?r=<código>`) que reabre exatamente
+aquele resultado — para usar na call de vendas em vez de ficar catando
+print. Ela é gerada no momento do envio e vai automaticamente para
+`mapa_link_resultado` no CRM.
+
+Não existe banco nem servidor por trás: nome, empresa e as respostas viajam
+codificadas na própria URL (base64url de um JSON), e a isca recalcula o
+relatório na hora, no navegador, sempre com o mesmo resultado. Abrir esse
+link não conta como uma nova conversão — não reenvia o lead, não dispara
+`isca_conclusao` de novo.
+
+Limitação aceita: se as perguntas ou pontuações de `app.js` mudarem depois,
+um link antigo pode calcular diferente do que a pessoa realmente respondeu.
+Para o uso pretendido — abrir na call, pouco tempo depois do lead ser gerado
+— não é um problema; não é pensado como arquivo permanente.
+
+Também dá para imprimir/exportar em PDF por esse mesmo link, pelo atalho do
+próprio navegador (Ctrl+P) — o CSS de impressão já esconde o CTA e mantém as
+cores.
 
 ## Como o diagnóstico funciona
 
