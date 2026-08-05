@@ -13,6 +13,7 @@ index.html    landing (renderiza no primeiro paint, sem depender do JS)
 styles.css    tokens da marca Oxford + componentes
 app.js        perguntas, pontuação, textos do diagnóstico e telas
 api/lead.js   função serverless opcional que repassa o lead ao webhook
+vercel.json   força revalidação de app.js/styles.css a cada deploy
 ```
 
 ## Rodar localmente
@@ -38,6 +39,13 @@ npx vercel --prod # produção
 ```
 
 Ou conecte o repositório pelo painel da Vercel e faça deploy pelo push.
+
+`app.js` e `styles.css` são sempre servidos na mesma URL (não há build com
+hash no nome do arquivo), então sem o `vercel.json` do projeto um
+recarregamento normal do navegador pode continuar mostrando a versão
+anterior depois de um deploy — o `vercel.json` já força revalidação a cada
+carregamento. Se estiver testando uma mudança e ela não aparecer, recarregue
+forçando (Ctrl+Shift+R) ou abra numa aba anônima antes de suspeitar de bug.
 
 ## O que configurar
 
