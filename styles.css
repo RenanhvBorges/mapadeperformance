@@ -243,13 +243,59 @@ button {
   margin-top: 40px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.hero__cta-hint {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--oxford-terracotta);
 }
 
 .hero__note {
   font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* Botão de início da landing: maior e com pulso sutil para deixar claro
+   que é ali que se clica — some ao primeiro hover/toque. */
+.btn--hero {
+  width: 100%;
+  max-width: 360px;
+  min-height: 64px;
+  padding: 0 40px;
+  font-size: 1.125rem;
+  animation: btn-pulse 2.2s var(--ease-out) infinite;
+}
+
+.btn--hero:hover,
+.btn--hero:active,
+.btn--hero:focus-visible {
+  animation: none;
+}
+
+.btn__arrow {
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.btn--hero:hover .btn__arrow {
+  transform: translateX(4px);
+}
+
+@keyframes btn-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 87, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(217, 119, 87, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 87, 0);
+  }
 }
 
 /* Em telas de celular a soma de todo o espaçamento acima empurra o botão
